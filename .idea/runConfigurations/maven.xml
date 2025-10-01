@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="maven" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ru.rtk.App" />
+    <module name="java_maven" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
