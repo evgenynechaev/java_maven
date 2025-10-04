@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/src/main/java/ru/rtk/repository/CustomerRepositoryImpl.java" value="40883201-05c0-44bc-ac14-fe782d6ac2ba" />
+    <file url="file://$PROJECT_DIR$/src/main/java/ru/rtk/repository/OrderRepositoryImpl.java" value="40883201-05c0-44bc-ac14-fe782d6ac2ba" />
+    <file url="file://$PROJECT_DIR$/src/main/java/ru/rtk/repository/OrderStatusRepositoryImpl.java" value="40883201-05c0-44bc-ac14-fe782d6ac2ba" />
+    <file url="file://$PROJECT_DIR$/src/main/java/ru/rtk/repository/ProductRepositoryImpl.java" value="40883201-05c0-44bc-ac14-fe782d6ac2ba" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/schema.sql" value="40883201-05c0-44bc-ac14-fe782d6ac2ba" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/test-queries.sql" value="40883201-05c0-44bc-ac14-fe782d6ac2ba" />
+  </component>
+</project>
