@@ -16,7 +16,6 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 public class State {
-    // private static final Path DB_PROPERTIES = Paths.get("\\src\\main\\resources\\db.properties");
     private ProductRepository productRepository;
     private CustomerRepository customerRepository;
     private OrderRepository orderRepository;
@@ -24,7 +23,7 @@ public class State {
     private final List<String> tables = new ArrayList<>();
 
     public void init() {
-        String db_properties = "db.properties";
+        String db_properties = "application.properties";
         try(InputStream input = App.class
                 .getClassLoader()
                 .getResourceAsStream(db_properties)

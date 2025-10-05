@@ -1,29 +1,17 @@
 package ru.rtk.core;
 
-// import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import ru.rtk.model.*;
 import ru.rtk.repository.*;
 
-// import javax.sql.DataSource;
 import java.io.BufferedReader;
-// import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-// import java.nio.file.Path;
-// import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.*;
 
 public class Start {
     private final String version = "v.1.0";
     private final State state = new State();
     private final Map<String, Command> commands = new LinkedHashMap<>();
-
-    /*
-    static {
-        WorldInfo.touch("App");
-    }
-    */
 
     public Start() {
         registerCommands();
@@ -40,15 +28,9 @@ public class Start {
         commands.put("insert", this::insert);
         commands.put("delete", this::delete);
         commands.put("new", this::orderNew);
+        commands.put("cancel", this::orderCancel);
         commands.put("add", this::add);
         commands.put("next", this::orderNextPhase);
-        // commands.put("insert", (ctx, a)
-        //         -> System.out.println(ctx.getCurrent().describe()));
-        // commands.put("find", (ctx, a)
-        //         -> System.out.println(ctx.getCurrent().describe()));
-        /*
-        commands.put("gc-stats", (ctx, a) -> System.out.println(this.gcStats()));
-        */
         commands.put("bye", this::exit);
         commands.put("exit", this::exit);
         commands.put("quit", this::exit);
@@ -71,12 +53,12 @@ public class Start {
                 delete <таблица> <id> - Удалить запись с номером id из таблицы
                 new <id_покупателя> <id_товара> <количество> - Новый заказ
                 add products <id_товара> <количество> - Добавить еще несколько экземпляров товара на склад
-                add orders <id_заказа> <количество> - Добавить еще несколько экземпляров товара в заказ
+                cancel <id_заказа> - Отменить заказ, перевести товар на склад, если заказ не 'Завершен'
                 next <id_заказа> - Продвижение статуса заказа по сценарию обработки
                 bye, exit, quit - Выход из программы
                 
                 Таблицы:
-                customers - Таблица клиентов
+                customers - Таблица покупателей
                 products - Таблица товаров
                 orders - Таблица заказов
                 status - Служебная таблица статусов заказа
@@ -174,10 +156,6 @@ public class Start {
                 List<Product> products = state.getProductRepository().findByName("%" + value + "%");
                 products.forEach(System.out::println);
                 break;
-            //case "order":
-            //     List<Order> orders = state.getOrderRepository().findAll();
-            //     orders.forEach(System.out::println);
-            //     break;
             default:
                 throw new InvalidCommandException("Нет такой таблицы '" + table + "'");
         }
@@ -197,6 +175,7 @@ public class Start {
                 if(customer.isValid())
                 {
                     state.getCustomerRepository().insert(customer);
+                    System.out.println("Покупатель добавлен");
                 }
                 break;
             case "products":
@@ -205,17 +184,8 @@ public class Start {
                 if(product.isValid())
                 {
                     state.getProductRepository().insert(product);
+                    System.out.println("Товар добавлен");
                 }
-                break;
-            case "order":
-                Order order = new Order();
-                /*
-                order.init();
-                if(order.isValid())
-                {
-                    state.getOrderRepository().insert(order);
-                }
-                */
                 break;
             default:
                 throw new InvalidCommandException("Нет такой таблицы");
@@ -239,13 +209,22 @@ public class Start {
         switch (table)
         {
             case "customers":
-                state.getCustomerRepository().delete(value);
+                try {
+                    Customer customer = state.getCustomerRepository().get(value).getFirst();
+                    state.getCustomerRepository().delete(value);
+                    System.out.println("Удален покупатель " + customer);
+                } catch (NoSuchElementException e) {
+                    throw new InvalidCommandException("Ошибка удаления.");
+                }
                 break;
             case "products":
-                state.getProductRepository().delete(value);
-                break;
-            case "orders":
-                state.getOrderRepository().delete(value);
+                try {
+                    Product product = state.getProductRepository().get(value).getFirst();
+                    state.getProductRepository().delete(value);
+                    System.out.println("Удален товар " + product);
+                } catch (NoSuchElementException e) {
+                    throw new InvalidCommandException("Ошибка удаления.");
+                }
                 break;
             default:
                 throw new InvalidCommandException("Нет такой таблицы '" + table + "'");
@@ -307,6 +286,7 @@ public class Start {
                 .build();
         state.getOrderRepository().insert(order);
         state.getProductRepository().subtract(productId, quantity);
+        System.out.println("Заказ добавлен");
     }
 
     private void add(State state, List<String> args) {
@@ -314,22 +294,62 @@ public class Start {
             throw new InvalidCommandException("Формат: add <таблица> <id> <количество>");
         }
 
+        int id, quantity;
+        String input = "";
+        try {
+            input = args.get(1);
+            id = Integer.parseInt(input);
+            input = args.get(2);
+            quantity = Integer.parseInt(input);
+        } catch (NumberFormatException | NullPointerException nfe) {
+            throw new InvalidCommandException("Неправильно введено значение '" + input + "'");
+        }
+
         String table = args.getFirst().toLowerCase();
-        String value = args.get(1);
         switch (table)
         {
             case "products":
-                // List<Product> products = state.getProductRepository().findByName("%" + value + "%");
-                // products.forEach(System.out::println);
+                try {
+                    Product product = state.getProductRepository().get(id).getFirst();
+                    state.getProductRepository().add(id, quantity);
+                    System.out.println("Добавлен товар " + product);
+                } catch (NoSuchElementException e) {
+                    throw new InvalidCommandException("Ошибка добавления товара.");
+                }
                 break;
-            case "orders":
-                 // List<Order> orders = state.getOrderRepository().findAll();
-                 // orders.forEach(System.out::println);
-                 break;
             default:
                 throw new InvalidCommandException("Нет такой таблицы '" + table + "'");
         }
     }
+
+    private void orderCancel(State state, List<String> args) {
+        if (args == null || args.isEmpty()) {
+            throw new InvalidCommandException("Формат: next <заказ_id>");
+        }
+
+        int orderId;
+        String input = "";
+        try {
+            input = args.getFirst();
+            orderId = Integer.parseInt(input);
+        } catch (NumberFormatException | NullPointerException nfe) {
+            throw new InvalidCommandException("Неправильно введено значение '" + input + "'");
+        }
+
+        List<Order> orders = state.getOrderRepository().get(orderId);
+        if(orders.isEmpty()) {
+            throw new InvalidCommandException("Неправильно введен id заказа '" + orderId + "'");
+        }
+
+        Order order = orders.getFirst();
+        if(order.getStatusId() >= 3) {
+            throw new InvalidCommandException("Заказ значится как завершенный. Возврат на склад невозможен.");
+        }
+        state.getOrderRepository().delete(order.getId());
+        state.getProductRepository().add(order.getProductId(), order.getQuantity());
+        System.out.println("Заказ " + order.getId() + " отменен.");
+    }
+
 
     private void orderNextPhase(State state, List<String> args) {
         if(args == null || args.isEmpty()) {

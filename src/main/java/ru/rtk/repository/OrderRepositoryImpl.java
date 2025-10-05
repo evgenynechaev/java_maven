@@ -18,6 +18,10 @@ public class OrderRepositoryImpl implements OrderRepository {
             "DELETE FROM orders WHERE id=?;";
 
     //language=SQL
+    private static final String SQL_ADD_QUANTITY =
+            "UPDATE orders SET quantity=quantity+? WHERE id=?;";
+
+    //language=SQL
     private static final String SQL_SELECT_BY_ID =
             "SELECT * FROM orders WHERE id=?;";
 
@@ -74,6 +78,12 @@ public class OrderRepositoryImpl implements OrderRepository {
     public void delete(int id) {
         jdbcTemplate.update(
                 SQL_DELETE, id);
+    }
+
+    @Override
+    public void add(int id, int quantity) {
+        jdbcTemplate.update(
+                SQL_ADD_QUANTITY, quantity, id);
     }
 
     @Override

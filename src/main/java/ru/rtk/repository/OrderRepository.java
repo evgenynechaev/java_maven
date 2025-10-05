@@ -11,5 +11,6 @@ public interface OrderRepository {
     // List<Order> findByLastName(String lastName);
     void insert(Order customer);
     void delete(int id);
+    void add(int id, int quantity);
     void nextPhase(int id);
 }
